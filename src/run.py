@@ -25,8 +25,10 @@ label_lines = [line.rstrip() for line
 
 class Predictor:
     DATASET_TYPE = 'yearbook'
-    def __init__(self):
-        with tf.gfile.FastGFile(path.join(MODEL_PATH, "trained_graph.pb"), 'rb') as f:
+
+    def __init__(self, model_name = "trained_graph.pb"):
+        self.model_name = model_name[:-3]
+        with tf.gfile.FastGFile(path.join(MODEL_PATH, model_name), 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
             _ = tf.import_graph_def(graph_def, name='')
@@ -43,19 +45,24 @@ class Predictor:
         return [med]
 
 
-    def yearbook_tf_inception(self, image_path):
+    def yearbook_tf_inception(self, image_path, loss_type = 'cross_entropy'):
         image_data = load(image_path)
 
         with tf.Session() as sess:
             # Feed the image_data as input to the graph and get first prediction
             softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
-
             predictions = sess.run(softmax_tensor, \
                                    {'DecodeJpeg/contents:0': image_data})
-            rst = predictions[0].argsort()[-len(predictions[0]):][0]
-            rst = np.asscalar(rst)
-            print rst
-            return [rst+1900]
+
+            if loss_type == 'cross_entropy':
+                rst = predictions[0].argsort()[-len(predictions[0]):][0]
+                rst = np.asscalar(rst)
+                print rst
+                return [rst+1900]
+            elif loss_type == 'MSE':
+                rst = int(round(predictions[0][0]))
+                print rst
+                return [rst + 1900]
 
     # We do this in the projective space of the map instead of longitude/latitude,
     # as France is almost flat and euclidean distances in the projective space are
