@@ -51,6 +51,7 @@ def dist(lat1, lon1, lat2, lon2):
 # Evaluate L1 distance on valid data for yearbook dataset
 def evaluateYearbook(predictor):
     test_list = util.listYearbook(False, True)
+    test_list = util.listYearbook(train=True, valid=False)
     #predictor = Predictor()
     predictor.DATASET_TYPE = 'yearbook'
 
@@ -71,7 +72,7 @@ def evaluateYearbook(predictor):
             truth_year = int(image_gr_truth[1])
             l1_dist += abs(pred_year[0] - truth_year)
             count = count + 1
-
+            print('%s,%i,%i,%i\n'%(image_gr_truth[0], pred_year[0], truth_year, abs(pred_year[0] - truth_year)))
             f.write('%s,%i,%i,%i\n'%(image_gr_truth[0], pred_year[0], truth_year, abs(pred_year[0] - truth_year)))
 
         l1_dist /= total_count
@@ -149,10 +150,14 @@ if __name__ == "__main__":
                         help="Dataset: valid/test", required=True)
     parser.add_argument("--model", dest="model",
                         help="Model name", default='trained_graph.pb')
+    parser.add_argument("--label_path", dest="label_path",
+                        default="trained_labels.txt")
+    parser.add_argument("--data_type", dest="data_type",
+                        default="year")
 
     args = parser.parse_args()
 
-    predictor = Predictor(model_name=args.model)
+    predictor = Predictor(model_name=args.model, label_path=args.label_path, type=args.data_type)
     if args.dataset_type == 'yearbook':
         print("Yearbook")
         if (args.type == 'valid'):

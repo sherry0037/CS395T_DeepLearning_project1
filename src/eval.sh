@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-
-for i in 0 1 2 3 4 5
-do
-    python grade.py --DATASET_TYPE=yearbook --type=valid --model=trained_graph_%i.pb
-done
+type=valid
+%type=test
+%python grade.py --DATASET_TYPE=yearbook --type=$type --model=trained_graph_decades_1.pb --label_path=trained_labels_decades.txt --data_type=decade
+python grade.py --DATASET_TYPE=yearbook --type=valid --model=1.pb --label_path=trained_labels.txt
