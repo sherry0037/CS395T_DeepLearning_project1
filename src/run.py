@@ -55,8 +55,9 @@ class Predictor:
                                    {'DecodeJpeg/contents:0': image_data})
 
             if loss_type == 'cross_entropy':
-                rst = predictions[0].argsort()[-len(predictions[0]):][0]
-                rst = np.asscalar(rst)
+                class_id = predictions[0].argsort()[-len(predictions[0]):][0]
+                rst = label_lines[class_id][4:]
+                rst = np.asarray(int(rst))
                 print rst
                 return [rst+1900]
             elif loss_type == 'MSE':
