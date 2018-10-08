@@ -11,16 +11,12 @@ import tensorflow as tf
 
 SRC_PATH = path.dirname(path.abspath(__file__))
 MODEL_PATH = path.join(SRC_PATH, '../model/')
-print MODEL_PATH
-
 
 def load(image_path):
     # TODO:load image and process if you want to do any
     #img=imread(image_path)
     img = tf.gfile.FastGFile(image_path, 'rb').read()
     return img
-
-
 
 class Predictor:
     DATASET_TYPE = 'yearbook'
@@ -46,8 +42,7 @@ class Predictor:
 
         return [med]
 
-
-    def yearbook_tf_inception(self, image_path, loss_type = 'cross_entropy'):
+    def yearbook_tf_inception(self, image_path):
         image_data = load(image_path)
 
         with tf.Session() as sess:
@@ -56,37 +51,12 @@ class Predictor:
             predictions = sess.run(softmax_tensor, \
                                    {'DecodeJpeg/contents:0': image_data})
 
-            if loss_type == 'cross_entropy':
-                class_id = predictions[0].argsort()[-len(predictions[0]):][::-1][0]
-                rst = self.label_lines[class_id][4:]
-                rst = np.asarray(int(rst))
-                print rst
-                return [rst+1900]
-            elif loss_type == 'MSE':
-                rst = int(round(predictions[0][0]))
-                print rst
-                return [rst + 1900]
 
-    def yearbook_tf_inception_decades(self, image_path, loss_type = 'cross_entropy'):
-        image_data = load(image_path)
-
-        with tf.Session() as sess:
-            # Feed the image_data as input to the graph and get first prediction
-            softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
-            predictions = sess.run(softmax_tensor, \
-                                   {'DecodeJpeg/contents:0': image_data})
-
-            if loss_type == 'cross_entropy':
-                class_id = predictions[0].argsort()[-len(predictions[0]):][::-1][0]
-                rst = self.label_lines[class_id][4:]
-                rst = np.asarray(int(rst))
-                print rst*10+5+1900
-                #return [rst+1900]
-                return [rst*10+5+1900]
-            elif loss_type == 'MSE':
-                rst = int(round(predictions[0][0]))
-                #print rst
-                return [rst*10+5+1900]
+            class_id = predictions[0].argsort()[-len(predictions[0]):][::-1][0]
+            rst = self.label_lines[class_id][4:]
+            rst = np.asarray(int(rst))
+            #print rst
+            return [rst+1900]
 
     # We do this in the projective space of the map instead of longitude/latitude,
     # as France is almost flat and euclidean distances in the projective space are
@@ -112,8 +82,5 @@ class Predictor:
             result = self.streetview_baseline()  # for geolocation
         elif self.DATASET_TYPE == 'yearbook':
             #result = self.yearbook_baseline()  # for yearbook
-            if self.type == 'year':
-                result = self.yearbook_tf_inception(image_path)
-            elif self.type == 'decade':
-                result = self.yearbook_tf_inception_decades(image_path)
+            result = self.yearbook_tf_inception(image_path)
         return result
