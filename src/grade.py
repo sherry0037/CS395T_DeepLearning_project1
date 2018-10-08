@@ -52,7 +52,7 @@ def dist(lat1, lon1, lat2, lon2):
 
 
 # Evaluate L1 distance on valid data for yearbook dataset
-"""def evaluateYearbook(predictor):
+def evaluateYearbook(predictor):
     test_list = util.listYearbook(False, True)
     #predictor = Predictor()
     predictor.DATASET_TYPE = 'yearbook'
@@ -80,27 +80,7 @@ def dist(lat1, lon1, lat2, lon2):
         l1_dist /= total_count
         print("L1 distance", l1_dist)
         f.write(str(l1_dist))
-    return l1_dist"""
-
-def evaluateYearbook(Predictor):
-  test_list = util.listYearbook(False, True)
-  predictor = Predictor()
-  predictor.DATASET_TYPE = 'yearbook'
-
-  total_count = len(test_list)
-  l1_dist = 0.0
-  print( "Total validation data", total_count )
-  count=0
-  for image_gr_truth in test_list:
-    image_path = path.join(YEARBOOK_VALID_PATH, image_gr_truth[0])
-    pred_year = predictor.predict(image_path)
-    truth_year = int(image_gr_truth[1])
-    l1_dist += abs(pred_year[0] - truth_year)
-    count=count+1
-
-  l1_dist /= total_count
-  print( "L1 distance", l1_dist)
-  return l1_dist
+    return l1_dist
 
 
 # Evaluate L1 distance on valid data for geolocation dataset
@@ -121,21 +101,56 @@ def evaluateStreetview(Predictor):
     print("L1 distance", l1_dist)
     return l1_dist
 
-def predictTestYearbook(Predictor):
-  test_list = util.testListYearbook()
-  predictor = Predictor()
-  predictor.DATASET_TYPE = 'yearbook'
 
-  total_count = len(test_list)
-  print( "Total test data: ", total_count )
+# Predict label for test data on yearbook dataset
+def predictTestYearbook(predictor):
+    test_list = util.testListYearbook()
+    #predictor = Predictor()
+    """predictor.DATASET_TYPE = 'yearbook'
 
-  output = open(YEARBOOK_TEST_LABEL_PATH, 'w')
-  for image in test_list:
-    image_path = path.join(YEARBOOK_TEST_PATH, image[0])
-    pred_year = predictor.predict(image_path)
-    out_string = image[0] + '\t' + str(pred_year[0]) + '\n'
-    output.write(out_string)
-  output.close()
+    total_count = len(test_list)
+    print("Total test data: ", total_count)
+
+    folder_path = path.join(SRC_PATH, '..', 'output', predictor.model_name)
+    if not os.path.isdir(folder_path):
+        os.mkdir(folder_path)
+    output_path = path.join(folder_path,'yearbook_test_label.txt')
+    with open(output_path, 'w') as f:
+        for image in test_list:
+            image_path = path.join(YEARBOOK_TEST_PATH, image[0])
+            pred_year = predictor.predict(image_path)
+            #out_string = image[0] + '\t' + str(pred_year[0]) + '\n'
+            # output.write(out_string)
+            f.write('%s,%i\n' % (image[0], pred_year[0]))"""
+
+    predictor.DATASET_TYPE = 'yearbook'
+
+    total_count = len(test_list)
+    l1_dist = 0.0
+    print("Total test data", total_count)
+    count = 0
+
+    folder_path = path.join(SRC_PATH, '..', 'output', predictor.model_name)
+    if not os.path.isdir(folder_path):
+        os.mkdir(folder_path)
+    output_path = path.join(folder_path, 'yearbook_test_label.txt')
+
+    with open(output_path, 'a') as f:
+        for image_gr_truth in test_list:
+            if random.random < 0.7:
+                continue
+            image_path = path.join(YEARBOOK_TEST_PATH, image_gr_truth[0])
+            pred_year = predictor.predict(image_path)
+            truth_year = int(image_gr_truth[1])
+            l1_dist += abs(pred_year[0] - truth_year)
+            count = count + 1
+            print('%s,%i,%i,%i\n' % (image_gr_truth[0], pred_year[0], truth_year, abs(pred_year[0] - truth_year)))
+            f.write('%s,%i,%i,%i\n' % (image_gr_truth[0], pred_year[0], truth_year, abs(pred_year[0] - truth_year)))
+
+        l1_dist /= count
+        print("L1 distance", l1_dist)
+        f.write(str(l1_dist))
+    return l1_dist
 
 # Predict label for test data for geolocation dataset
 def predictTestStreetview(Predictor):
@@ -173,12 +188,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    predictor = Predictor(model_name=args.model, label_path=args.label_path, type=args.data_type)
     if args.dataset_type == 'yearbook':
         print("Yearbook")
         if (args.type == 'valid'):
-            evaluateYearbook(Predictor)
+            evaluateYearbook(predictor)
         elif (args.type == 'test'):
-            predictTestYearbook(Predictor)
+            predictTestYearbook(predictor)
         else:
             print("Unknown type '%s'", args.type)
     elif args.dataset_type == 'geolocation':
