@@ -137,7 +137,7 @@ def predictTestYearbook(predictor):
 
     with open(output_path, 'a') as f:
         for image_gr_truth in test_list:
-            if random.random < 0.5:
+            if random.random < 0.7:
                 continue
             image_path = path.join(YEARBOOK_TEST_PATH, image_gr_truth[0])
             pred_year = predictor.predict(image_path)
