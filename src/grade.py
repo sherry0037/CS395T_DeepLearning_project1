@@ -51,7 +51,6 @@ def dist(lat1, lon1, lat2, lon2):
 # Evaluate L1 distance on valid data for yearbook dataset
 def evaluateYearbook(predictor):
     test_list = util.listYearbook(False, True)
-    test_list = util.listYearbook(train=True, valid=False)
     #predictor = Predictor()
     predictor.DATASET_TYPE = 'yearbook'
 
