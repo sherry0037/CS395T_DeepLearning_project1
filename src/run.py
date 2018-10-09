@@ -25,11 +25,13 @@ def load(image_path):
 class Predictor:
     DATASET_TYPE = 'yearbook'
 
-    def __init__(self, model_name="trained_graph.pb", label_path="trained_labels.txt", type='year'):
+    def __init__(self, model_name="trained_graph.pb", label_path="trained_labels.txt",
+                loss_type = 'cross_entropy', type='year'):
         self.model_name = model_name[:-3]
         self.label_lines = [line.rstrip() for line
                    in tf.gfile.GFile(path.join(MODEL_PATH, label_path))]
         self.type = type
+        self.loss_type = loss_type
         with tf.gfile.FastGFile(path.join(MODEL_PATH, model_name), 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
@@ -49,11 +51,12 @@ class Predictor:
 
     def yearbook_tf_inception(self, image_path, loss_type = 'cross_entropy'):
         image_data = load(image_path)
+        print ("*"*10)
 
         with tf.Session() as sess:
             # Feed the image_data as input to the graph and get first prediction
             softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
-            predictions = sess.run(softmax_tensor, \
+            predictions = sess.run(softmax_tensor,
                                    {'DecodeJpeg/contents:0': image_data})
 
             if loss_type == 'cross_entropy':
@@ -66,6 +69,8 @@ class Predictor:
                 rst = int(round(predictions[0][0]))
                 print rst
                 return [rst + 1900]
+            else:
+                print 'loss type '+loss_type + 'doesnt exist'
 
     def yearbook_tf_inception_decades(self, image_path, loss_type = 'cross_entropy'):
         image_data = load(image_path)
@@ -113,7 +118,7 @@ class Predictor:
         elif self.DATASET_TYPE == 'yearbook':
             #result = self.yearbook_baseline()  # for yearbook
             if self.type == 'year':
-                result = self.yearbook_tf_inception(image_path)
+                result = self.yearbook_tf_inception(image_path, loss_type=self.loss_type)
             elif self.type == 'decade':
                 result = self.yearbook_tf_inception_decades(image_path)
         return result

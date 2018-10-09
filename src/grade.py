@@ -185,10 +185,13 @@ if __name__ == "__main__":
                         default="trained_labels.txt")
     parser.add_argument("--data_type", dest="data_type",
                         default="year")
+    parser.add_argument("--loss_type", dest="loss_type",
+                        default="cross_entropy")
 
     args = parser.parse_args()
 
-    predictor = Predictor(model_name=args.model, label_path=args.label_path, type=args.data_type)
+    predictor = Predictor(model_name=args.model, label_path=args.label_path,
+                          type=args.data_type, loss_type=args.loss_type)
     if args.dataset_type == 'yearbook':
         print("Yearbook")
         if (args.type == 'valid'):
